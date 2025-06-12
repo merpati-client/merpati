@@ -1,0 +1,14 @@
+[toolchain]
+channel = "nightly"
+profile = "minimal"
+components = [
+  "rustfmt",       # formatting
+  "rust-analyzer", # IDE support
+  "rust-src",      # stdlib source code
+  "cargo",         # package manager
+  "clippy",        # linter
+]
+targets = [
+  "x86_64-unknown-linux-gnu"
+]
+
