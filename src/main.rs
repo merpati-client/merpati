@@ -1,4 +1,5 @@
-use iced::widget::{button, row, text_input, Row};
+use iced::widget::{button, column, scrollable, text, text_input};
+use iced::{Element, Task};
 
 fn main() -> iced::Result {
     iced::application("Merpati", Http::update, Http::view)
@@ -9,27 +10,58 @@ fn main() -> iced::Result {
 #[derive(Default)]
 struct Http {
    content: String,
+   response_text: String,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     ContentChanged(String),
     SendRequest,
+    RequestCompleted(Result<String, String>),
 }
 
 impl Http {
-    fn view(&self) -> Row<'_, Message> {
-        row![
-            text_input("URL", &self.content)
-                .on_input(Message::ContentChanged),
+    fn view(&self) -> Element<'_, Message> {
+        column![
+            text_input("URL", &self.content).on_input(Message::ContentChanged),
             button("Send").on_press(Message::SendRequest),
+            scrollable(text(&self.response_text).size(16))
         ]
+            .into()
     }
 
-    fn update(&mut self, message: Message) {
+    fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::ContentChanged(content) => self.content = content,
-            Message::SendRequest => println!("Sending request to {}", self.content),
+            Message::ContentChanged(content) => {
+                self.content = content;
+                Task::none()
+            },
+            Message::RequestCompleted(response) => {
+                match response {
+                    Ok(text) => self.response_text = text,
+                    Err(e) => self.response_text = format!("ERR: {}", e),
+                }
+                Task::none()
+            },
+            Message::SendRequest => {
+                println!("Sending request to {}", self.content);
+                Task::perform(
+                    make_request(self.content.clone()),
+                    |result| result,
+                )
+            },
         }
+    }
+}
+
+async fn make_request(url: String) -> Message {
+    match reqwest::get(&url).await {
+        Ok(response) => {
+            match response.text().await {
+                Ok(text) => Message::RequestCompleted(Ok(text)),
+                Err(e) => Message::RequestCompleted(Err(format!("Failed to read response body: {}", e))),
+            }
+        }
+        Err(e) => Message::RequestCompleted(Err(format!("Failed to fetch URL: {}", e))),
     }
 }

@@ -68,7 +68,7 @@
 
           devShells.default = pkgs.mkShell {
             name = "merpati";
-            buildInputs = buildInputs ++ [ toolchain ];
+            buildInputs = buildInputs ++ [ toolchain pkgs.openssl pkgs.pkg-config ];
             LD_LIBRARY_PATH = builtins.foldl' (a: b: "${a}:${b}/lib") "${pkgs.vulkan-loader}/lib" buildInputs;
           };
         }
