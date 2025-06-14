@@ -49,7 +49,7 @@ impl From<&HttpMethod> for reqwest::Method {
 
 #[derive(Default)]
 struct Merpati {
-    content: String,
+    url_input: String,
     response_text: String,
     selected_http_method: HttpMethod,
 }
@@ -81,7 +81,7 @@ impl Merpati {
                     Some(self.selected_http_method.clone()),
                     Message::HttpMethodSelected,
                 ),
-                text_input("URL", &self.content).on_input(Message::ContentChanged),
+                text_input("URL", &self.url_input).on_input(Message::ContentChanged),
                 button("Send").on_press(Message::SendRequest),
             ],
             scrollable(text(&self.response_text).size(16))
@@ -92,11 +92,11 @@ impl Merpati {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::ContentChanged(content) => {
-                self.content = content;
+                self.url_input = content;
                 Task::none()
             },
             Message::RequestCompleted(response) => {
-                tracing::info!("Response Received: {} {}", self.selected_http_method, self.content);
+                tracing::info!("Response Received: {} {}", self.selected_http_method, self.url_input);
                 match response {
                     Ok(text) => self.response_text = text,
                     Err(e) => self.response_text = format!("ERR: {}", e),
@@ -104,9 +104,9 @@ impl Merpati {
                 Task::none()
             },
             Message::SendRequest => {
-                tracing::info!("Sending request: {} {}", self.selected_http_method, self.content);
+                tracing::info!("Sending request: {} {}", self.selected_http_method, self.url_input);
                 Task::perform(
-                    make_request(self.selected_http_method.clone(), self.content.clone()),
+                    make_request(self.selected_http_method.clone(), self.url_input.clone()),
                     |result| result,
                 )
             },
