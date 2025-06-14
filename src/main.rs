@@ -1,8 +1,12 @@
 use std::fmt::Display;
 
+use http_body_util::BodyExt;
+use hyper::Request;
+use hyper::client::conn::http1;
+use hyper_util::rt::tokio::TokioIo;
 use iced::widget::{button, column, pick_list, row, scrollable, text, text_editor, text_input};
 use iced::{Element, Task};
-use reqwest::Client;
+use tokio::net::TcpStream;
 
 fn main() -> iced::Result {
     tracing_subscriber::fmt().init();
@@ -35,8 +39,8 @@ impl Display for HttpMethod {
     }
 }
 
-impl From<&HttpMethod> for reqwest::Method {
-    fn from(value: &HttpMethod) -> Self {
+impl From<HttpMethod> for hyper::Method {
+    fn from(value: HttpMethod) -> Self {
         match value {
             HttpMethod::Get => Self::GET,
             HttpMethod::Post => Self::POST,
@@ -132,21 +136,42 @@ impl Merpati {
 }
 
 async fn make_request(method: HttpMethod, url: String, body: String) -> Message {
-    let client = Client::new();
-    let method: reqwest::Method = (&method).into();
+    let url = url.parse::<hyper::Uri>().unwrap();
 
-    let request = client
-        .request(method, &url)
-        .header("Content-Type", "application/json")
-        .body(body);
+    let host = url.host().expect("uri has no host");
+    let port = url.port_u16().unwrap_or(80);
+    let addr = format!("{}:{}", host, port);
+    let stream = TcpStream::connect(addr).await.unwrap();
 
-    match request.send().await {
-        Ok(response) => {
-            match response.text().await {
-                Ok(text) => Message::RequestCompleted(Ok(text)),
-                Err(e) => Message::RequestCompleted(Err(format!("Failed to read response body: {}", e))),
-            }
+    let io = TokioIo::new(stream);
+    let (mut sender, conn) = http1::handshake::<_, String>(io).await.unwrap();
+    tokio::task::spawn(async move {
+        if let Err(err) = conn.await {
+            tracing::error!("Connection failed: {:?}", err);
         }
-        Err(e) => Message::RequestCompleted(Err(format!("Failed to fetch URL: {}", e))),
+    });
+
+    let authority = url.authority().unwrap().clone();
+
+    let path = url.path();
+    let req = Request::builder()
+        .uri(path)
+        .method(method)
+        .header(hyper::header::HOST, authority.as_str())
+        .header(hyper::header::CONTENT_TYPE, "application/json")
+        .body(body)
+        .unwrap();
+
+    let mut res = sender.send_request(req).await.unwrap();
+
+    let mut response_body = Vec::new();
+    while let Some(next) = res.frame().await {
+        let frame = next.unwrap();
+        if let Some(chunk) = frame.data_ref() {
+            response_body.extend_from_slice(chunk);
+        }
     }
+
+    let response_string = String::from_utf8(response_body).unwrap();
+    Message::RequestCompleted(Ok(response_string))
 }
