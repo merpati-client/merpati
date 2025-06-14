@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use iced::widget::{button, column, pick_list, row, scrollable, text, text_input};
+use iced::widget::{button, column, pick_list, row, scrollable, text, text_editor, text_input};
 use iced::{Element, Task};
 use reqwest::Client;
 
@@ -50,6 +50,7 @@ impl From<&HttpMethod> for reqwest::Method {
 #[derive(Default)]
 struct Merpati {
     url_input: String,
+    request_body: text_editor::Content,
     response_text: String,
     selected_http_method: HttpMethod,
 }
@@ -57,6 +58,8 @@ struct Merpati {
 #[derive(Debug, Clone)]
 enum Message {
     ContentChanged(String),
+    RequestBodyChanged(text_editor::Action),
+
     SendRequest,
     RequestCompleted(Result<String, String>),
     HttpMethodSelected(HttpMethod),
@@ -84,6 +87,7 @@ impl Merpati {
                 text_input("URL", &self.url_input).on_input(Message::ContentChanged),
                 button("Send").on_press(Message::SendRequest),
             ],
+            text_editor(&self.request_body).on_action(Message::RequestBodyChanged),
             scrollable(text(&self.response_text).size(16))
         ]
             .into()
@@ -93,6 +97,10 @@ impl Merpati {
         match message {
             Message::ContentChanged(content) => {
                 self.url_input = content;
+                Task::none()
+            },
+            Message::RequestBodyChanged(action) => {
+                self.request_body.perform(action);
                 Task::none()
             },
             Message::RequestCompleted(response) => {
@@ -106,7 +114,11 @@ impl Merpati {
             Message::SendRequest => {
                 tracing::info!("Sending request: {} {}", self.selected_http_method, self.url_input);
                 Task::perform(
-                    make_request(self.selected_http_method.clone(), self.url_input.clone()),
+                    make_request(
+                        self.selected_http_method.clone(),
+                        self.url_input.clone(),
+                        self.request_body.text(),
+                    ),
                     |result| result,
                 )
             },
@@ -119,10 +131,14 @@ impl Merpati {
     }
 }
 
-async fn make_request(method: HttpMethod, url: String) -> Message {
+async fn make_request(method: HttpMethod, url: String, body: String) -> Message {
     let client = Client::new();
     let method: reqwest::Method = (&method).into();
-    let request = client.request(method, &url);
+
+    let request = client
+        .request(method, &url)
+        .header("Content-Type", "application/json")
+        .body(body);
 
     match request.send().await {
         Ok(response) => {
