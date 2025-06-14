@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use iced::widget::{button, column, pick_list, row, scrollable, text, text_editor, text_input};
+use iced::widget::{button, column, pick_list, row, text_editor, text_input};
+use iced::Length::Fill;
 use iced::{Element, Task};
 
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -42,7 +43,7 @@ pub struct Http {
     title: String,
     url_input: String,
     request_body: text_editor::Content,
-    response_text: String,
+    response_text: text_editor::Content,
     selected_http_method: HttpMethod,
 }
 
@@ -50,6 +51,7 @@ pub struct Http {
 pub enum Message {
     UrlInputChanged(String),
     RequestBodyChanged(text_editor::Action),
+    ResponseTextChanged(text_editor::Action),
 
     SendRequest,
     RequestCompleted(Result<String, String>),
@@ -83,7 +85,7 @@ impl Http {
                 button("Send").on_press(Message::SendRequest),
             ],
             text_editor(&self.request_body).on_action(Message::RequestBodyChanged),
-            scrollable(text(&self.response_text).size(16))
+            text_editor(&self.response_text).on_action(Message::ResponseTextChanged),
         ]
             .into()
     }
@@ -98,11 +100,15 @@ impl Http {
                 self.request_body.perform(action);
                 Task::none()
             },
+            Message::ResponseTextChanged(action) => {
+                self.response_text.perform(action);
+                Task::none()
+            },
             Message::RequestCompleted(response) => {
                 tracing::info!("Response Received: {} {}", self.selected_http_method, self.url_input);
                 match response {
-                    Ok(text) => self.response_text = text,
-                    Err(e) => self.response_text = format!("ERR: {}", e),
+                    Ok(text) => self.response_text = text_editor::Content::with_text(&text),
+                    Err(e) => tracing::error!("Response error: {e:?}"),
                 }
                 Task::none()
             },
