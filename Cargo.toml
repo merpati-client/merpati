@@ -7,3 +7,5 @@ edition = "2024"
 iced = { version = "0.13.1", features = ["tokio"] }
 reqwest = "0.12.20"
 tokio = { version = "1", features = ["full"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"

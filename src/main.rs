@@ -5,8 +5,11 @@ use iced::{Element, Task};
 use reqwest::Client;
 
 fn main() -> iced::Result {
+    tracing_subscriber::fmt().init();
+
+    tracing::info!("Starting Merpati");
     iced::application(Merpati::title, Merpati::update, Merpati::view)
-        .theme(|_| iced::Theme::CatppuccinMocha)
+        .theme(|_| iced::Theme::Dark)
         .run()
 }
 
@@ -93,6 +96,7 @@ impl Merpati {
                 Task::none()
             },
             Message::RequestCompleted(response) => {
+                tracing::info!("Response Received: {} {}", self.selected_http_method, self.content);
                 match response {
                     Ok(text) => self.response_text = text,
                     Err(e) => self.response_text = format!("ERR: {}", e),
@@ -100,14 +104,14 @@ impl Merpati {
                 Task::none()
             },
             Message::SendRequest => {
-                println!("Sending request to {}", self.content);
+                tracing::info!("Sending request: {} {}", self.selected_http_method, self.content);
                 Task::perform(
                     make_request(self.selected_http_method.clone(), self.content.clone()),
                     |result| result,
                 )
             },
             Message::HttpMethodSelected(method) => {
-                println!("Selected method: {method}");
+                tracing::info!("Selecting method: {method}");
                 self.selected_http_method = method;
                 Task::none()
             }
