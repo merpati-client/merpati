@@ -1,4 +1,4 @@
-use iced::widget::{button, column, scrollable, text, text_input};
+use iced::widget::{button, column, scrollable, row, text, text_input};
 use iced::{Element, Task};
 
 fn main() -> iced::Result {
@@ -27,8 +27,10 @@ impl Merpati {
 
     fn view(&self) -> Element<'_, Message> {
         column![
-            text_input("URL", &self.content).on_input(Message::ContentChanged),
-            button("Send").on_press(Message::SendRequest),
+            row![
+                text_input("URL", &self.content).on_input(Message::ContentChanged),
+                button("Send").on_press(Message::SendRequest),
+            ],
             scrollable(text(&self.response_text).size(16))
         ]
             .into()
