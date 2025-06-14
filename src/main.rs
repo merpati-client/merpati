@@ -2,7 +2,7 @@ use iced::widget::{button, column, scrollable, text, text_input};
 use iced::{Element, Task};
 
 fn main() -> iced::Result {
-    iced::application("Merpati", Http::update, Http::view)
+    iced::application(Http::title, Http::update, Http::view)
         .theme(|_| iced::Theme::CatppuccinMocha)
         .run()
 }
@@ -21,6 +21,10 @@ enum Message {
 }
 
 impl Http {
+    fn title(&self) -> String {
+        "Merpati".to_string()
+    }
+
     fn view(&self) -> Element<'_, Message> {
         column![
             text_input("URL", &self.content).on_input(Message::ContentChanged),
