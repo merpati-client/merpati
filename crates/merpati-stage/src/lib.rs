@@ -1,4 +1,4 @@
-use iced::{Element, Task};
+use iced::{Alignment, Element, Task};
 use iced::widget::{button, column, row, text};
 
 #[derive(Default)]
@@ -10,6 +10,7 @@ pub struct Stage {
 #[derive(Debug, Clone)]
 pub enum Message {
     TabSelect(usize),
+    TabClose(usize),
     TabNew,
 
     Http(merpati_http::Message),
@@ -20,9 +21,7 @@ impl Stage {
         let mut tabs: Vec<Element<'_, Message>> = self.tabs
             .iter()
             .enumerate()
-            .map(|(i, tab)| {
-                button(text(tab.title())).on_press(Message::TabSelect(i)).into()
-            })
+            .map(|(i, tab)| tab_button(i, tab.title()))
             .collect();
 
         tabs.push(button("+").on_press(Message::TabNew).into());
@@ -40,6 +39,10 @@ impl Stage {
                 self.tabs.push(merpati_http::Http::new(title));
                 Task::none()
             },
+            Message::TabClose(i) => {
+                self.tabs.remove(i);
+                Task::none()
+            },
             Message::TabSelect(i) => {
                 self.selected_tab = i;
                 Task::none()
@@ -50,7 +53,16 @@ impl Stage {
                 };
 
                 http.update(msg).map(Message::Http)
-            }
+            },
         }
     }
+}
+
+fn tab_button<'a>(i: usize, label: String) -> Element<'a, Message> {
+    let tab_label = text(label);
+    let close_button = button(text("X").size(12)).on_press(Message::TabClose(i));
+    let tab_content = row![tab_label, close_button].align_y(Alignment::Center).spacing(5);
+    let tab_button = button(tab_content).on_press(Message::TabSelect(i));
+
+    tab_button.into()
 }
