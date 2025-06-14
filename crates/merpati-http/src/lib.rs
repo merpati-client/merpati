@@ -1,12 +1,7 @@
 use std::fmt::Display;
 
-use http_body_util::BodyExt;
-use hyper::Request;
-use hyper::client::conn::http1;
-use hyper_util::rt::tokio::TokioIo;
 use iced::widget::{button, column, pick_list, row, scrollable, text, text_editor, text_input};
 use iced::{Element, Task};
-use tokio::net::TcpStream;
 
 #[derive(Debug, Default, Clone, PartialEq)]
 pub enum HttpMethod {
@@ -30,7 +25,7 @@ impl Display for HttpMethod {
     }
 }
 
-impl From<HttpMethod> for hyper::Method {
+impl From<HttpMethod> for reqwest::Method {
     fn from(value: HttpMethod) -> Self {
         match value {
             HttpMethod::Get => Self::GET,
@@ -132,42 +127,15 @@ impl Http {
 }
 
 async fn make_request(method: HttpMethod, url: String, body: String) -> Message {
-    let url = url.parse::<hyper::Uri>().unwrap();
+    let client = reqwest::Client::new();
 
-    let host = url.host().expect("uri has no host");
-    let port = url.port_u16().unwrap_or(80);
-    let addr = format!("{}:{}", host, port);
-    let stream = TcpStream::connect(addr).await.unwrap();
+    let request = client
+        .request(reqwest::Method::from(method), &url)
+        .header("Content-Type", "application/json")
+        .body(body);
 
-    let io = TokioIo::new(stream);
-    let (mut sender, conn) = http1::handshake::<_, String>(io).await.unwrap();
-    tokio::task::spawn(async move {
-        if let Err(err) = conn.await {
-            tracing::error!("Connection failed: {:?}", err);
-        }
-    });
+    let response = request.send().await.unwrap();
+    let response_text = response.text().await.unwrap();
 
-    let authority = url.authority().unwrap().clone();
-
-    let path = url.path();
-    let req = Request::builder()
-        .uri(path)
-        .method(method)
-        .header(hyper::header::HOST, authority.as_str())
-        .header(hyper::header::CONTENT_TYPE, "application/json")
-        .body(body)
-        .unwrap();
-
-    let mut res = sender.send_request(req).await.unwrap();
-
-    let mut response_body = Vec::new();
-    while let Some(next) = res.frame().await {
-        let frame = next.unwrap();
-        if let Some(chunk) = frame.data_ref() {
-            response_body.extend_from_slice(chunk);
-        }
-    }
-
-    let response_string = String::from_utf8(response_body).unwrap();
-    Message::RequestCompleted(Ok(response_string))
+    Message::RequestCompleted(Ok(response_text))
 }
