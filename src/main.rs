@@ -2,13 +2,13 @@ use iced::widget::{button, column, scrollable, text, text_input};
 use iced::{Element, Task};
 
 fn main() -> iced::Result {
-    iced::application(Http::title, Http::update, Http::view)
+    iced::application(Merpati::title, Merpati::update, Merpati::view)
         .theme(|_| iced::Theme::CatppuccinMocha)
         .run()
 }
 
 #[derive(Default)]
-struct Http {
+struct Merpati {
    content: String,
    response_text: String,
 }
@@ -20,7 +20,7 @@ enum Message {
     RequestCompleted(Result<String, String>),
 }
 
-impl Http {
+impl Merpati {
     fn title(&self) -> String {
         "Merpati".to_string()
     }
