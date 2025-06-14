@@ -13,6 +13,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 
 merpati-http.workspace = true
+merpati-stage.workspace = true
 
 [workspace]
 resolver = "3"
@@ -39,3 +40,4 @@ hyper-util = { version = "0.1.14", features = ["http1", "client", "tokio"] }
 
 # Workspace
 merpati-http = { path = "crates/merpati-http" }
+merpati-stage = { path = "crates/merpati-stage" }

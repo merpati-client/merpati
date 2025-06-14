@@ -12,7 +12,7 @@ fn main() -> iced::Result {
 }
 
 enum Screens {
-    Http(merpati_http::Http)
+    Stage(merpati_stage::Stage)
 }
 
 struct Merpati {
@@ -22,14 +22,14 @@ struct Merpati {
 impl Default for Merpati {
     fn default() -> Self {
         Self {
-            screens: Screens::Http(merpati_http::Http::default())
+            screens: Screens::Stage(merpati_stage::Stage::default())
         }
     }
 }
 
 #[derive(Debug, Clone)]
 enum Message {
-    Http(merpati_http::Message),
+    Stage(merpati_stage::Message),
 }
 
 impl Merpati {
@@ -39,15 +39,15 @@ impl Merpati {
 
     fn view(&self) -> Element<'_, Message> {
         match &self.screens {
-            Screens::Http(http) => http.view().map(Message::Http),
+            Screens::Stage(stage) => stage.view().map(Message::Stage),
         }
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::Http(msg) => {
-                let Screens::Http(http) = &mut self.screens;
-                http.update(msg).map(Message::Http)
+            Message::Stage(msg) => {
+                let Screens::Stage(stage) = &mut self.screens;
+                stage.update(msg).map(Message::Stage)
             }
         }
     }

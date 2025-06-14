@@ -44,6 +44,7 @@ impl From<HttpMethod> for hyper::Method {
 
 #[derive(Default)]
 pub struct Http {
+    title: String,
     url_input: String,
     request_body: text_editor::Content,
     response_text: String,
@@ -61,6 +62,14 @@ pub enum Message {
 }
 
 impl Http {
+    pub fn new(title: String) -> Self {
+        Self { title, ..Default::default() }
+    }
+
+    pub fn title(&self) -> String {
+        self.title.clone()
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         column![
             row![
