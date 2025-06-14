@@ -5,7 +5,7 @@ use hyper::Request;
 use hyper::client::conn::http1;
 use hyper_util::rt::tokio::TokioIo;
 use iced::widget::{button, column, pick_list, row, scrollable, text, text_editor, text_input};
-use iced::{Element, Task};
+use iced::{Element, Font, Task};
 use tokio::net::TcpStream;
 
 fn main() -> iced::Result {
@@ -14,6 +14,8 @@ fn main() -> iced::Result {
     tracing::info!("Starting Merpati");
     iced::application(Merpati::title, Merpati::update, Merpati::view)
         .theme(|_| iced::Theme::Dark)
+        .font(include_bytes!("../assets/fonts/geist-mono.ttf"))
+        .default_font(Font::with_name("Geist Mono"))
         .run()
 }
 
