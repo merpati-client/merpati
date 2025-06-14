@@ -1864,6 +1864,16 @@ dependencies = [
 name = "merpati"
 version = "0.1.0"
 dependencies = [
+ "iced",
+ "merpati-http",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "merpati-http"
+version = "0.1.0"
+dependencies = [
  "http-body-util",
  "hyper",
  "hyper-util",
