@@ -1,7 +1,11 @@
 [package]
 name = "merpati"
+description = "Merpati API Client"
+repository = "https://github.com/secona/merpati"
+authors = ["Vito Secona <secona00@gmail.com>"]
 version = "0.1.0"
 edition = "2024"
+license = "GPL-3.0-or-later"
 
 [dependencies]
 http-body-util = "0.1.3"
