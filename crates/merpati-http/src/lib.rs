@@ -52,7 +52,7 @@ pub struct Http {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    ContentChanged(String),
+    UrlInputChanged(String),
     RequestBodyChanged(text_editor::Action),
 
     SendRequest,
@@ -75,7 +75,7 @@ impl Http {
                     Some(self.selected_http_method.clone()),
                     Message::HttpMethodSelected,
                 ),
-                text_input("URL", &self.url_input).on_input(Message::ContentChanged),
+                text_input("URL", &self.url_input).on_input(Message::UrlInputChanged),
                 button("Send").on_press(Message::SendRequest),
             ],
             text_editor(&self.request_body).on_action(Message::RequestBodyChanged),
@@ -86,7 +86,7 @@ impl Http {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            Message::ContentChanged(content) => {
+            Message::UrlInputChanged(content) => {
                 self.url_input = content;
                 Task::none()
             },
