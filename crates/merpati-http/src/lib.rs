@@ -1,7 +1,6 @@
 use std::fmt::Display;
 
 use iced::widget::{button, column, pick_list, row, text_editor, text_input};
-use iced::Length::Fill;
 use iced::{Element, Task};
 
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -141,6 +140,7 @@ async fn make_request(method: HttpMethod, url: String, body: String) -> Message 
         .body(body);
 
     let response = request.send().await.unwrap();
+    merpati_script::post_request(response.status().as_u16() as usize);
     let response_text = response.text().await.unwrap();
 
     Message::RequestCompleted(Ok(response_text))

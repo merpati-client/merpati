@@ -1,5 +1,5 @@
 [package]
-name = "merpati-http"
+name = "merpati-script"
 repository.workspace = true
 authors.workspace = true
 version.workspace = true
@@ -7,11 +7,6 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-iced.workspace = true
-tokio.workspace = true
+allocative.workspace = true
+starlark.workspace = true
 tracing.workspace = true
-tracing-subscriber.workspace = true
-
-reqwest.workspace = true
-
-merpati-script.workspace = true

@@ -36,6 +36,11 @@ tracing-subscriber = "0.3.19"
 # HTTP
 reqwest = "0.12.20"
 
+# Scripting
+allocative = "0.3.4"
+starlark = "0.13.0"
+
 # Workspace
 merpati-http = { path = "crates/merpati-http" }
+merpati-script = { path = "crates/merpati-script" }
 merpati-stage = { path = "crates/merpati-stage" }
