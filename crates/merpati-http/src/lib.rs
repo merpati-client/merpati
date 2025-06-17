@@ -42,6 +42,7 @@ pub struct Http {
     title: String,
     url_input: String,
     request_body: text_editor::Content,
+    post_request_script: text_editor::Content,
     response_text: text_editor::Content,
     selected_http_method: HttpMethod,
 }
@@ -50,6 +51,7 @@ pub struct Http {
 pub enum Message {
     UrlInputChanged(String),
     RequestBodyChanged(text_editor::Action),
+    PostRequestScriptChanged(text_editor::Action),
     ResponseTextChanged(text_editor::Action),
 
     SendRequest,
@@ -84,6 +86,7 @@ impl Http {
                 button("Send").on_press(Message::SendRequest),
             ],
             text_editor(&self.request_body).on_action(Message::RequestBodyChanged),
+            text_editor(&self.post_request_script).on_action(Message::PostRequestScriptChanged),
             text_editor(&self.response_text).on_action(Message::ResponseTextChanged),
         ]
             .into()
@@ -97,6 +100,10 @@ impl Http {
             },
             Message::RequestBodyChanged(action) => {
                 self.request_body.perform(action);
+                Task::none()
+            },
+            Message::PostRequestScriptChanged(action) => {
+                self.post_request_script.perform(action);
                 Task::none()
             },
             Message::ResponseTextChanged(action) => {
@@ -118,6 +125,7 @@ impl Http {
                         self.selected_http_method.clone(),
                         self.url_input.clone(),
                         self.request_body.text(),
+                        self.post_request_script.text(),
                     ),
                     |result| result,
                 )
@@ -131,7 +139,7 @@ impl Http {
     }
 }
 
-async fn make_request(method: HttpMethod, url: String, body: String) -> Message {
+async fn make_request(method: HttpMethod, url: String, body: String, post_request: String) -> Message {
     let client = reqwest::Client::new();
 
     let request = client
@@ -140,7 +148,7 @@ async fn make_request(method: HttpMethod, url: String, body: String) -> Message 
         .body(body);
 
     let response = request.send().await.unwrap();
-    merpati_script::post_request(response.status().as_u16() as usize);
+    merpati_script::post_request(post_request, response.status().as_u16() as usize);
     let response_text = response.text().await.unwrap();
 
     Message::RequestCompleted(Ok(response_text))

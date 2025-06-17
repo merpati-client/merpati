@@ -6,10 +6,6 @@ use starlark::values::Value;
 use starlark::values::none::NoneType;
 use starlark::environment::{Globals, GlobalsBuilder, Module};
 
-static DEFAULT_POST_REQUEST: &'static str = "
-print(status_code)
-";
-
 fn globals() -> &'static Globals {
     static GLOBALS: OnceLock<Globals> = OnceLock::new();
     GLOBALS.get_or_init(|| GlobalsBuilder::new().with(global).build())
@@ -23,10 +19,10 @@ fn global(builder: &mut GlobalsBuilder) {
     }
 }
 
-pub fn post_request(status_code: usize) {
+pub fn post_request(script: String, status_code: usize) {
     let ast = AstModule::parse(
         "post_request.star",
-        DEFAULT_POST_REQUEST.to_string(),
+        script,
         &Dialect::default(),
     ).unwrap();
 
