@@ -61,7 +61,10 @@ pub enum Message {
 
 impl Http {
     pub fn new(title: String) -> Self {
-        Self { title, ..Default::default() }
+        Self {
+            title,
+            ..Default::default()
+        }
     }
 
     pub fn title(&self) -> String {
@@ -89,7 +92,7 @@ impl Http {
             text_editor(&self.post_request_script).on_action(Message::PostRequestScriptChanged),
             text_editor(&self.response_text).on_action(Message::ResponseTextChanged),
         ]
-            .into()
+        .into()
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -134,7 +137,7 @@ impl Http {
                 tracing::info!("Selecting method: {method}");
                 self.selected_http_method = method;
                 Task::none()
-            }
+            },
         }
     }
 }

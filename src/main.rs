@@ -12,7 +12,7 @@ fn main() -> iced::Result {
 }
 
 enum Screens {
-    Stage(merpati_stage::Stage)
+    Stage(merpati_stage::Stage),
 }
 
 struct Merpati {
@@ -22,7 +22,7 @@ struct Merpati {
 impl Default for Merpati {
     fn default() -> Self {
         Self {
-            screens: Screens::Stage(merpati_stage::Stage::default())
+            screens: Screens::Stage(merpati_stage::Stage::default()),
         }
     }
 }
@@ -48,7 +48,7 @@ impl Merpati {
             Message::Stage(msg) => {
                 let Screens::Stage(stage) = &mut self.screens;
                 stage.update(msg).map(Message::Stage)
-            }
+            },
         }
     }
 }

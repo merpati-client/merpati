@@ -1,5 +1,5 @@
-use iced::{Alignment, Element, Task};
 use iced::widget::{button, column, row, text};
+use iced::{Alignment, Element, Task};
 
 #[derive(Default)]
 pub struct Stage {
@@ -18,7 +18,8 @@ pub enum Message {
 
 impl Stage {
     pub fn view(&self) -> Element<'_, Message> {
-        let mut tabs: Vec<Element<'_, Message>> = self.tabs
+        let mut tabs: Vec<Element<'_, Message>> = self
+            .tabs
             .iter()
             .enumerate()
             .map(|(i, tab)| tab_button(i, tab.title()))
@@ -28,7 +29,7 @@ impl Stage {
 
         match self.tabs.get(self.selected_tab) {
             Some(tab) => column![row(tabs), tab.view().map(Message::Http)].into(),
-            _ => row(tabs).into()
+            _ => row(tabs).into(),
         }
     }
 
@@ -49,7 +50,7 @@ impl Stage {
             },
             Message::Http(msg) => {
                 let Some(http) = self.tabs.get_mut(self.selected_tab) else {
-                    return Task::none()
+                    return Task::none();
                 };
 
                 http.update(msg).map(Message::Http)

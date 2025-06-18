@@ -1,10 +1,10 @@
 use std::sync::OnceLock;
 
+use starlark::environment::{Globals, GlobalsBuilder, Module};
 use starlark::eval::Evaluator;
 use starlark::syntax::{AstModule, Dialect};
 use starlark::values::Value;
 use starlark::values::none::NoneType;
-use starlark::environment::{Globals, GlobalsBuilder, Module};
 
 fn globals() -> &'static Globals {
     static GLOBALS: OnceLock<Globals> = OnceLock::new();
@@ -20,11 +20,7 @@ fn global(builder: &mut GlobalsBuilder) {
 }
 
 pub fn post_request(script: String, status_code: usize) {
-    let ast = AstModule::parse(
-        "post_request.star",
-        script,
-        &Dialect::default(),
-    ).unwrap();
+    let ast = AstModule::parse("post_request.star", script, &Dialect::default()).unwrap();
 
     let module = Module::new();
     let heap = module.heap();
