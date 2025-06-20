@@ -4,7 +4,7 @@ use iced::{Element, Task};
 use iced_aw::Tabs;
 
 use crate::client::HttpHeaders;
-use crate::tabs::{body, response, script, HttpTab};
+use crate::tabs::{HttpTab, body, response, script};
 
 mod client;
 mod tabs;
@@ -59,21 +59,9 @@ impl Http {
 
     pub fn view(&self) -> Element<'_, Message> {
         let tabs: Element<'_, Message> = Tabs::new(Message::TabSelected)
-            .push(
-                TabId::Body,
-                self.body_tab.tab_label(),
-                self.body_tab.view(),
-            )
-            .push(
-                TabId::Response,
-                self.response_tab.tab_label(),
-                self.response_tab.view(),
-            )
-            .push(
-                TabId::Script,
-                self.script_tab.tab_label(),
-                self.script_tab.view(),
-            )
+            .push(TabId::Body, self.body_tab.tab_label(), self.body_tab.view())
+            .push(TabId::Response, self.response_tab.tab_label(), self.response_tab.view())
+            .push(TabId::Script, self.script_tab.tab_label(), self.script_tab.view())
             .set_active_tab(&self.active_tab)
             .into();
 
@@ -134,7 +122,7 @@ impl Http {
                 self.selected_http_method = method;
                 Task::none()
             },
-            
+
             Message::TabSelected(tab_id) => {
                 tracing::info!("Tab selected: {:?}", tab_id);
                 self.active_tab = tab_id;

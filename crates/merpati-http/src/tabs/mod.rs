@@ -1,4 +1,8 @@
-use iced::{alignment::{Horizontal, Vertical}, widget::Container, Element, Length};
+use iced::{
+    Element, Length,
+    alignment::{Horizontal, Vertical},
+    widget::Container,
+};
 use iced_aw::TabLabel;
 
 pub mod body;

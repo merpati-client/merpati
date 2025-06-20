@@ -1,4 +1,4 @@
-use iced::{widget::text_editor, Element, Length, Task};
+use iced::{Element, Length, Task, widget::text_editor};
 use iced_aw::TabLabel;
 
 use crate::tabs::HttpTab;
@@ -19,7 +19,7 @@ impl Tab {
             Message::ResponseTextChanged(action) => {
                 self.content.perform(action);
                 Task::none()
-            }
+            },
         }
     }
 }

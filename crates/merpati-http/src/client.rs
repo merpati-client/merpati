@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use std::collections::HashMap;
+use std::fmt::Display;
 
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 
@@ -39,7 +39,7 @@ impl Into<reqwest::Method> for HttpMethod {
 
 #[derive(Debug, Clone)]
 pub struct HttpHeaders {
-    headers: HashMap<String, String>
+    headers: HashMap<String, String>,
 }
 
 impl Default for HttpHeaders {
@@ -60,7 +60,7 @@ impl Into<HeaderMap> for HttpHeaders {
             let header_value = HeaderValue::from_str(&value).unwrap();
             header_map.insert(header_name, header_value);
         }
-        
+
         header_map
     }
 }
@@ -76,10 +76,7 @@ pub(crate) async fn make_request(
 
     tracing::info!("{:?}", headers);
 
-    let request = client
-        .request(method.into(), &url)
-        .headers(headers.into())
-        .body(body);
+    let request = client.request(method.into(), &url).headers(headers.into()).body(body);
 
     let response = request.send().await?;
     merpati_script::post_request(post_request, response.status().as_u16() as usize);
