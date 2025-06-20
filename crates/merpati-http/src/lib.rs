@@ -3,8 +3,7 @@ use iced::widget::{button, column, pick_list, row, text_editor, text_input};
 use iced::{Element, Task};
 use iced_aw::Tabs;
 
-use crate::client::HttpHeaders;
-use crate::tabs::{HttpTab, body, response, script};
+use crate::tabs::{body, headers, response, script, HttpTab};
 
 mod client;
 mod tabs;
@@ -14,12 +13,12 @@ pub struct Http {
     title: String,
     url_input: String,
     selected_http_method: HttpMethod,
-    headers: HttpHeaders,
 
     active_tab: TabId,
     body_tab: body::Tab,
     response_tab: response::Tab,
     script_tab: script::Tab,
+    headers_tab: headers::Tab,
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Default)]
@@ -27,6 +26,7 @@ pub enum TabId {
     #[default]
     Body,
     Response,
+    Headers,
     Script,
 }
 
@@ -43,6 +43,7 @@ pub enum Message {
     BodyTabMessage(body::Message),
     ResponseTabMessage(response::Message),
     ScriptTabMessage(script::Message),
+    HeadersTabMessage(headers::Message),
 }
 
 impl Http {
@@ -61,6 +62,7 @@ impl Http {
         let tabs: Element<'_, Message> = Tabs::new(Message::TabSelected)
             .push(TabId::Body, self.body_tab.tab_label(), self.body_tab.view())
             .push(TabId::Response, self.response_tab.tab_label(), self.response_tab.view())
+            .push(TabId::Headers, self.headers_tab.tab_label(), self.headers_tab.view())
             .push(TabId::Script, self.script_tab.tab_label(), self.script_tab.view())
             .set_active_tab(&self.active_tab)
             .into();
@@ -103,7 +105,7 @@ impl Http {
                 Task::perform(
                     client::make_request(
                         self.selected_http_method.clone(),
-                        self.headers.clone(),
+                        self.headers_tab.headers.clone(),
                         self.url_input.clone(),
                         self.body_tab.content.text(),
                         self.script_tab.content.text(),
@@ -132,6 +134,7 @@ impl Http {
             Message::BodyTabMessage(msg) => self.body_tab.update(msg),
             Message::ResponseTabMessage(msg) => self.response_tab.update(msg),
             Message::ScriptTabMessage(msg) => self.script_tab.update(msg),
+            Message::HeadersTabMessage(msg) => self.headers_tab.update(msg),
         }
     }
 }

@@ -6,6 +6,7 @@ use iced::{
 use iced_aw::TabLabel;
 
 pub mod body;
+pub mod headers;
 pub mod response;
 pub mod script;
 
