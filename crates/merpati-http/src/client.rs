@@ -1,4 +1,7 @@
 use std::fmt::Display;
+use std::collections::HashMap;
+
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 
 use crate::Message;
 
@@ -36,12 +39,48 @@ impl From<HttpMethod> for reqwest::Method {
     }
 }
 
-pub(crate) async fn make_request(method: HttpMethod, url: String, body: String, post_request: String) -> Message {
+#[derive(Debug, Clone)]
+pub struct HttpHeaders {
+    headers: HashMap<String, String>
+}
+
+impl Default for HttpHeaders {
+    fn default() -> Self {
+        let mut headers = HashMap::new();
+        headers.insert("Content-Type".to_string(), "application/json".to_string());
+
+        Self { headers }
+    }
+}
+
+impl Into<HeaderMap> for HttpHeaders {
+    fn into(self) -> HeaderMap {
+        let mut header_map = HeaderMap::new();
+
+        for (key, value) in self.headers {
+            let header_name = HeaderName::from_bytes(key.as_bytes()).unwrap();
+            let header_value = HeaderValue::from_str(&value).unwrap();
+            header_map.insert(header_name, header_value);
+        }
+        
+        header_map
+    }
+}
+
+pub(crate) async fn make_request(
+    method: HttpMethod,
+    headers: HttpHeaders,
+    url: String,
+    body: String,
+    post_request: String,
+) -> Message {
     let client = reqwest::Client::new();
+
+    tracing::info!("{:?}", headers);
 
     let request = client
         .request(reqwest::Method::from(method), &url)
-        .header("Content-Type", "application/json")
+        .headers(headers.into())
         .body(body);
 
     let response = request.send().await.unwrap();

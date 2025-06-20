@@ -2,6 +2,8 @@ use client::HttpMethod;
 use iced::widget::{button, column, pick_list, row, text_editor, text_input};
 use iced::{Element, Task};
 
+use crate::client::HttpHeaders;
+
 mod client;
 
 #[derive(Default)]
@@ -12,6 +14,7 @@ pub struct Http {
     post_request_script: text_editor::Content,
     response_text: text_editor::Content,
     selected_http_method: HttpMethod,
+    headers: HttpHeaders,
 }
 
 #[derive(Debug, Clone)]
@@ -93,6 +96,7 @@ impl Http {
                 Task::perform(
                     client::make_request(
                         self.selected_http_method.clone(),
+                        self.headers.clone(),
                         self.url_input.clone(),
                         self.request_body.text(),
                         self.post_request_script.text(),
