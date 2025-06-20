@@ -27,14 +27,14 @@ impl Display for HttpMethod {
     }
 }
 
-impl From<HttpMethod> for reqwest::Method {
-    fn from(value: HttpMethod) -> Self {
-        match value {
-            HttpMethod::Get => Self::GET,
-            HttpMethod::Post => Self::POST,
-            HttpMethod::Put => Self::PUT,
-            HttpMethod::Patch => Self::PATCH,
-            HttpMethod::Delete => Self::DELETE,
+impl Into<reqwest::Method> for HttpMethod {
+    fn into(self) -> reqwest::Method {
+        match self {
+            Self::Get => reqwest::Method::GET,
+            Self::Post => reqwest::Method::POST,
+            Self::Put => reqwest::Method::PUT,
+            Self::Patch => reqwest::Method::PATCH,
+            Self::Delete => reqwest::Method::DELETE,
         }
     }
 }
@@ -79,7 +79,7 @@ pub(crate) async fn make_request(
     tracing::info!("{:?}", headers);
 
     let request = client
-        .request(reqwest::Method::from(method), &url)
+        .request(method.into(), &url)
         .headers(headers.into())
         .body(body);
 
