@@ -3,8 +3,6 @@ use std::collections::HashMap;
 
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 
-use crate::Message;
-
 #[derive(Debug, Default, Clone, PartialEq)]
 pub enum HttpMethod {
     #[default]
@@ -73,7 +71,7 @@ pub(crate) async fn make_request(
     url: String,
     body: String,
     post_request: String,
-) -> Message {
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     let client = reqwest::Client::new();
 
     tracing::info!("{:?}", headers);
@@ -83,9 +81,9 @@ pub(crate) async fn make_request(
         .headers(headers.into())
         .body(body);
 
-    let response = request.send().await.unwrap();
+    let response = request.send().await?;
     merpati_script::post_request(post_request, response.status().as_u16() as usize);
-    let response_text = response.text().await.unwrap();
+    let response_text = response.text().await?;
 
-    Message::RequestCompleted(Ok(response_text))
+    Ok(response_text)
 }

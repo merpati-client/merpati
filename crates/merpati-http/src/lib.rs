@@ -19,13 +19,14 @@ pub struct Http {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    Noop,
     UrlInputChanged(String),
     RequestBodyChanged(text_editor::Action),
     PostRequestScriptChanged(text_editor::Action),
     ResponseTextChanged(text_editor::Action),
 
     SendRequest,
-    RequestCompleted(Result<String, String>),
+    RequestCompleted(String),
     HttpMethodSelected(HttpMethod),
 }
 
@@ -67,6 +68,7 @@ impl Http {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::Noop => Task::none(),
             Message::UrlInputChanged(content) => {
                 self.url_input = content;
                 Task::none()
@@ -85,10 +87,7 @@ impl Http {
             },
             Message::RequestCompleted(response) => {
                 tracing::info!("Response Received: {} {}", self.selected_http_method, self.url_input);
-                match response {
-                    Ok(text) => self.response_text = text_editor::Content::with_text(&text),
-                    Err(e) => tracing::error!("Response error: {e:?}"),
-                }
+                self.response_text = text_editor::Content::with_text(&response);
                 Task::none()
             },
             Message::SendRequest => {
@@ -101,7 +100,13 @@ impl Http {
                         self.request_body.text(),
                         self.post_request_script.text(),
                     ),
-                    |result| result,
+                    |result| {
+                        if let Ok(result) = result {
+                            Message::RequestCompleted(result)
+                        } else {
+                            Message::Noop
+                        }
+                    },
                 )
             },
             Message::HttpMethodSelected(method) => {
