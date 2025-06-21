@@ -3,7 +3,7 @@ use iced::widget::{button, column, pick_list, row, text_editor, text_input};
 use iced::{Element, Task};
 use iced_aw::Tabs;
 
-use crate::tabs::{body, headers, response, script, HttpTab};
+use crate::tabs::{HttpTab, body, headers, response, script};
 
 mod client;
 mod tabs;
@@ -110,12 +110,12 @@ impl Http {
                         self.body_tab.content.text(),
                         self.script_tab.content.text(),
                     ),
-                    |result| {
-                        if let Ok(result) = result {
-                            Message::RequestCompleted(result)
-                        } else {
+                    |result| match result {
+                        Ok(result) => Message::RequestCompleted(result),
+                        Err(err) => {
+                            tracing::error!("{}", err);
                             Message::Noop
-                        }
+                        },
                     },
                 )
             },

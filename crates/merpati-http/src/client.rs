@@ -52,11 +52,16 @@ impl HttpHeaderEntry {
         }
     }
 
-    pub fn set_key(&mut self, key: String) {
-        if key.is_empty() {
-            self.idle = true;
+    pub fn empty() -> Self {
+        Self {
+            key: String::new(),
+            value: String::new(),
+            idle: true,
         }
+    }
 
+    pub fn set_key(&mut self, key: String) {
+        self.idle = key.is_empty();
         self.key = key;
     }
 
@@ -115,6 +120,14 @@ impl HttpHeaders {
             inner: self.headers.iter(),
         }
     }
+
+    pub fn insert_empty(&mut self) {
+        self.headers.push(HttpHeaderEntry::empty());
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut HttpHeaderEntry> {
+        self.headers.get_mut(index)
+    }
 }
 
 pub struct HttpHeadersIter<'a> {
@@ -142,7 +155,7 @@ pub(crate) async fn make_request(
 
     let request = client.request(method.into(), &url).headers(headers.into()).body(body);
 
-    let response = request.send().await?;
+    let response = request.send().await.unwrap();
     merpati_script::post_request(post_request, response.status().as_u16() as usize);
     let response_text = response.text().await?;
 
