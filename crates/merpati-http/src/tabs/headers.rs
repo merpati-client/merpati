@@ -1,4 +1,5 @@
-use iced::{widget::text, Element, Task};
+use iced::widget::{column, text};
+use iced::{Element, Task};
 use iced_aw::TabLabel;
 
 use crate::{client::HttpHeaders, tabs::HttpTab};
@@ -29,6 +30,12 @@ impl HttpTab for Tab {
     }
 
     fn content(&self) -> Element<'_, Self::Message> {
-        text("Not Implemented").into()
+        column(
+            self.headers
+                .iter()
+                .map(|h| text(format!("{}: {}", h.key(), h.value())).into())
+                .collect::<Vec<_>>(),
+        )
+        .into()
     }
 }

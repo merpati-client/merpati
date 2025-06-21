@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::Display;
 
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
@@ -38,14 +37,57 @@ impl Into<reqwest::Method> for HttpMethod {
 }
 
 #[derive(Debug, Clone)]
+pub struct HttpHeaderEntry {
+    key: String,
+    value: String,
+    idle: bool,
+}
+
+impl HttpHeaderEntry {
+    pub fn new(key: String, value: String) -> Self {
+        Self {
+            key,
+            value,
+            idle: false,
+        }
+    }
+
+    pub fn set_key(&mut self, key: String) {
+        if key.is_empty() {
+            self.idle = true;
+        }
+
+        self.key = key;
+    }
+
+    pub fn set_value(&mut self, value: String) {
+        self.value = value;
+    }
+
+    pub fn is_idle(&self) -> bool {
+        self.idle
+    }
+
+    pub fn key(&self) -> String {
+        self.key.clone()
+    }
+
+    pub fn value(&self) -> String {
+        self.value.clone()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct HttpHeaders {
-    headers: HashMap<String, String>,
+    headers: Vec<HttpHeaderEntry>,
 }
 
 impl Default for HttpHeaders {
     fn default() -> Self {
-        let mut headers = HashMap::new();
-        headers.insert("Content-Type".to_string(), "application/json".to_string());
+        let headers = vec![HttpHeaderEntry::new(
+            "Content-Type".to_string(),
+            "application/json".to_string(),
+        )];
 
         Self { headers }
     }
@@ -55,13 +97,35 @@ impl Into<HeaderMap> for HttpHeaders {
     fn into(self) -> HeaderMap {
         let mut header_map = HeaderMap::new();
 
-        for (key, value) in self.headers {
-            let header_name = HeaderName::from_bytes(key.as_bytes()).unwrap();
-            let header_value = HeaderValue::from_str(&value).unwrap();
-            header_map.insert(header_name, header_value);
+        for HttpHeaderEntry { key, value, idle } in self.headers {
+            if !idle {
+                let header_name = HeaderName::from_bytes(key.as_bytes()).unwrap();
+                let header_value = HeaderValue::from_str(&value).unwrap();
+                header_map.insert(header_name, header_value);
+            }
         }
 
         header_map
+    }
+}
+
+impl HttpHeaders {
+    pub fn iter(&self) -> HttpHeadersIter<'_> {
+        HttpHeadersIter {
+            inner: self.headers.iter(),
+        }
+    }
+}
+
+pub struct HttpHeadersIter<'a> {
+    inner: std::slice::Iter<'a, HttpHeaderEntry>,
+}
+
+impl<'a> Iterator for HttpHeadersIter<'a> {
+    type Item = &'a HttpHeaderEntry;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
     }
 }
 
