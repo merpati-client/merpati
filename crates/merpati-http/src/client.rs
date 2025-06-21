@@ -128,6 +128,10 @@ impl HttpHeaders {
     pub fn get_mut(&mut self, index: usize) -> Option<&mut HttpHeaderEntry> {
         self.headers.get_mut(index)
     }
+
+    pub fn remove(&mut self, index: usize) {
+        self.headers.remove(index);
+    }
 }
 
 pub struct HttpHeadersIter<'a> {

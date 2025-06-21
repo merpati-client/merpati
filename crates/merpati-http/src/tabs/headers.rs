@@ -9,6 +9,7 @@ use crate::{client::HttpHeaders, tabs::HttpTab};
 pub enum Message {
     KeyChanged(usize, String),
     ValueChanged(usize, String),
+    RemoveHeader(usize),
     NewHeader,
 }
 
@@ -30,6 +31,10 @@ impl Tab {
                 if let Some(header) = self.headers.get_mut(i) {
                     header.set_value(value);
                 }
+                Task::none()
+            },
+            Message::RemoveHeader(i) => {
+                self.headers.remove(i);
                 Task::none()
             },
             Message::NewHeader => {
@@ -79,5 +84,6 @@ fn header_component((i, h): (usize, &HttpHeaderEntry)) -> Element<'_, crate::Mes
             text_input("Value", &h.value())
                 .on_input(move |value| crate::Message::HeadersTabMessage(Message::ValueChanged(i, value))),
         )
+        .push(button("Remove").on_press(crate::Message::HeadersTabMessage(Message::RemoveHeader(i))))
         .into()
 }

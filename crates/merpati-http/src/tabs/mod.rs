@@ -24,7 +24,7 @@ pub trait HttpTab {
             .width(Length::Fill)
             .height(Length::Fill)
             .align_x(Horizontal::Center)
-            .align_y(Vertical::Center)
+            .align_y(Vertical::Top)
             .padding(TAB_PADDING)
             .into()
     }
