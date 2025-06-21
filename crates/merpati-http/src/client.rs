@@ -146,13 +146,25 @@ impl<'a> Iterator for HttpHeadersIter<'a> {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct HttpResponse {
+    pub response_text: String,
+}
+
+impl HttpResponse {
+    pub async fn from_response(response: reqwest::Response) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+        let response_text = response.text().await?;
+        Ok(Self { response_text })
+    }
+}
+
 pub(crate) async fn make_request(
     method: HttpMethod,
     headers: HttpHeaders,
     url: String,
     body: String,
     post_request: String,
-) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<HttpResponse, Box<dyn std::error::Error + Send + Sync>> {
     let client = reqwest::Client::new();
 
     tracing::info!("{:?}", headers);
@@ -161,7 +173,6 @@ pub(crate) async fn make_request(
 
     let response = request.send().await.unwrap();
     merpati_script::post_request(post_request, response.status().as_u16() as usize);
-    let response_text = response.text().await?;
 
-    Ok(response_text)
+    Ok(HttpResponse::from_response(response).await?)
 }

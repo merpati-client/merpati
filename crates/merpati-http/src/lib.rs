@@ -3,6 +3,7 @@ use iced::widget::{button, column, pick_list, row, text_editor, text_input};
 use iced::{Element, Task};
 use iced_aw::Tabs;
 
+use crate::client::HttpResponse;
 use crate::tabs::{HttpTab, body, headers, response, script};
 
 mod client;
@@ -35,7 +36,7 @@ pub enum Message {
     Noop,
 
     SendRequest,
-    RequestCompleted(String),
+    RequestCompleted(HttpResponse),
     HttpMethodSelected(HttpMethod),
     UrlInputChanged(String),
 
@@ -97,7 +98,8 @@ impl Http {
             },
             Message::RequestCompleted(response) => {
                 tracing::info!("Response Received: {} {}", self.selected_http_method, self.url_input);
-                self.response_tab.content = text_editor::Content::with_text(&response);
+                self.response_tab.content = text_editor::Content::with_text(&response.response_text);
+
                 Task::none()
             },
             Message::SendRequest => {
