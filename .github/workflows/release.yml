@@ -54,6 +54,8 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout Code
