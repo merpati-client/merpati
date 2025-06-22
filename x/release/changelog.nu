@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-def app-version [] {
+export def app-version [] {
   "v" + (open Cargo.toml | get workspace.package.version)
 }
 
@@ -32,6 +32,7 @@ def main [cmd: string, version?: string] {
   match $cmd {
     "get" => { get-changelog $version },
     "new" => { new-changelog $version },
+    "ver" => { app-version }
     _ => { print "Unknown command" }
   }
 }
