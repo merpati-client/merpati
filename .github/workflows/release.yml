@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-    branches:
-      - main
 
 jobs:
   build:
@@ -24,7 +22,7 @@ jobs:
       - name: Install Nushell
         uses: hustcer/setup-nu@v1
         with:
-          version: latest
+          version: '0.104.1'
 
       - name: Install Dependencies
         run: |
