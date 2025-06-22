@@ -21,7 +21,7 @@ def new-changelog [version: string] {
 
   let date = (date now | format date "%Y-%m-%d")
 
-  $"\n## ($version) - ($date)\n\nTODO\n\n---"
+  $"\n## ($version) [($date)]\n\nTODO\n\n---"
   | append (open CHANGELOG.md)
   | save -f CHANGELOG.md
 }
